@@ -20,7 +20,7 @@ namespace ConsoleApp1
             host.AddServiceEndpoint(typeof(IService1), new WSHttpBinding(), httpUrl);
 
             //Start the Service
-            host.Open();
+            host.Open();            
 
             Console.WriteLine("Service is host at " + DateTime.Now.ToString());
             Console.WriteLine("Host is running... Press <Enter> key to stop");
