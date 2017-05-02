@@ -8,8 +8,8 @@
     <ProjectGuid>{4E7A38E5-267A-446A-9B96-54980026E916}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WcfServiceLibrary1</RootNamespace>
-    <AssemblyName>WcfServiceLibrary1</AssemblyName>
+    <RootNamespace>TaskLibrary</RootNamespace>
+    <AssemblyName>TaskLibrary</AssemblyName>
     <ProjectTypeGuids>{3D9AD99F-2412-4246-B90B-4EAA41C64699};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <StartArguments>/client:"WcfTestClient.exe"</StartArguments>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
@@ -51,8 +51,7 @@
     <Compile Include="Service1.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="App.config.unused" />
+    <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

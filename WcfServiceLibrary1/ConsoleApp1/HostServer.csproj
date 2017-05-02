@@ -50,9 +50,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WcfServiceLibrary1\TasksLibrary.csproj">
+    <ProjectReference Include="..\WcfServiceLibrary1\TaskLibrary.csproj">
       <Project>{4e7a38e5-267a-446a-9b96-54980026e916}</Project>
-      <Name>TasksLibrary</Name>
+      <Name>TaskLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -2,7 +2,7 @@
 using System.ServiceModel;
 using System;
 
-namespace WcfServiceLibrary1
+namespace TaskLibrary
 {
     // Instead of events WCF use callbacks
     public interface IClientCallback

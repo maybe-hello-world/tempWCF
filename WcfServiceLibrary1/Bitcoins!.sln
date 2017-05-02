@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TasksLibrary", "WcfServiceLibrary1\TasksLibrary.csproj", "{4E7A38E5-267A-446A-9B96-54980026E916}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskLibrary", "WcfServiceLibrary1\TaskLibrary.csproj", "{4E7A38E5-267A-446A-9B96-54980026E916}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HostServer", "ConsoleApp1\HostServer.csproj", "{BF8173C1-A42F-4C9C-A010-D35CCB6B2F92}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -11,6 +11,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HostServer", "ConsoleApp1\H
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{124C8023-C1BD-49CB-A520-F896C338706E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4E7A38E5-267A-446A-9B96-54980026E916} = {4E7A38E5-267A-446A-9B96-54980026E916}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
