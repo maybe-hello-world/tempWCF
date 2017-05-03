@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Client.TaskLibrary {
+namespace Client.ServiceReference {
     using System.Runtime.Serialization;
     using System;
     
@@ -139,88 +139,77 @@ namespace Client.TaskLibrary {
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ServiceModel.ServiceContractAttribute(ConfigurationName="TaskLibrary.IService1", CallbackContract=typeof(Client.TaskLibrary.IService1Callback))]
+    [System.ServiceModel.ServiceContractAttribute(ConfigurationName="ServiceReference.IService1")]
     public interface IService1 {
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IService1/RegisterMe")]
-        void RegisterMe();
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IService1/RegisterMe", ReplyAction="http://tempuri.org/IService1/RegisterMeResponse")]
+        System.Guid RegisterMe();
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IService1/RegisterMe")]
-        System.Threading.Tasks.Task RegisterMeAsync();
-        
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IService1/GetCurrentBlock", ReplyAction="http://tempuri.org/IService1/GetCurrentBlockResponse")]
-        Client.TaskLibrary.BitcoinBlock GetCurrentBlock();
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IService1/RegisterMe", ReplyAction="http://tempuri.org/IService1/RegisterMeResponse")]
+        System.Threading.Tasks.Task<System.Guid> RegisterMeAsync();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IService1/GetCurrentBlock", ReplyAction="http://tempuri.org/IService1/GetCurrentBlockResponse")]
-        System.Threading.Tasks.Task<Client.TaskLibrary.BitcoinBlock> GetCurrentBlockAsync();
+        Client.ServiceReference.BitcoinBlock GetCurrentBlock(System.Guid id);
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IService1/ProposeAnswer")]
-        void ProposeAnswer(uint time, uint nonce);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IService1/GetCurrentBlock", ReplyAction="http://tempuri.org/IService1/GetCurrentBlockResponse")]
+        System.Threading.Tasks.Task<Client.ServiceReference.BitcoinBlock> GetCurrentBlockAsync(System.Guid id);
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IService1/ProposeAnswer")]
-        System.Threading.Tasks.Task ProposeAnswerAsync(uint time, uint nonce);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IService1/ProposeAnswer", ReplyAction="http://tempuri.org/IService1/ProposeAnswerResponse")]
+        void ProposeAnswer(System.Guid id, uint time, uint nonce);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IService1/ProposeAnswer", ReplyAction="http://tempuri.org/IService1/ProposeAnswerResponse")]
+        System.Threading.Tasks.Task ProposeAnswerAsync(System.Guid id, uint time, uint nonce);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public interface IService1Callback {
-        
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IService1/TimeUpdate")]
-        void TimeUpdate(uint time);
-        
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IService1/BlockFound")]
-        void BlockFound();
-    }
-    
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public interface IService1Channel : Client.TaskLibrary.IService1, System.ServiceModel.IClientChannel {
+    public interface IService1Channel : Client.ServiceReference.IService1, System.ServiceModel.IClientChannel {
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public partial class Service1Client : System.ServiceModel.DuplexClientBase<Client.TaskLibrary.IService1>, Client.TaskLibrary.IService1 {
+    public partial class Service1Client : System.ServiceModel.ClientBase<Client.ServiceReference.IService1>, Client.ServiceReference.IService1 {
         
-        public Service1Client(System.ServiceModel.InstanceContext callbackInstance) : 
-                base(callbackInstance) {
+        public Service1Client() {
         }
         
-        public Service1Client(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName) : 
-                base(callbackInstance, endpointConfigurationName) {
+        public Service1Client(string endpointConfigurationName) : 
+                base(endpointConfigurationName) {
         }
         
-        public Service1Client(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName, string remoteAddress) : 
-                base(callbackInstance, endpointConfigurationName, remoteAddress) {
+        public Service1Client(string endpointConfigurationName, string remoteAddress) : 
+                base(endpointConfigurationName, remoteAddress) {
         }
         
-        public Service1Client(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(callbackInstance, endpointConfigurationName, remoteAddress) {
+        public Service1Client(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
+                base(endpointConfigurationName, remoteAddress) {
         }
         
-        public Service1Client(System.ServiceModel.InstanceContext callbackInstance, System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(callbackInstance, binding, remoteAddress) {
+        public Service1Client(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
+                base(binding, remoteAddress) {
         }
         
-        public void RegisterMe() {
-            base.Channel.RegisterMe();
+        public System.Guid RegisterMe() {
+            return base.Channel.RegisterMe();
         }
         
-        public System.Threading.Tasks.Task RegisterMeAsync() {
+        public System.Threading.Tasks.Task<System.Guid> RegisterMeAsync() {
             return base.Channel.RegisterMeAsync();
         }
         
-        public Client.TaskLibrary.BitcoinBlock GetCurrentBlock() {
-            return base.Channel.GetCurrentBlock();
+        public Client.ServiceReference.BitcoinBlock GetCurrentBlock(System.Guid id) {
+            return base.Channel.GetCurrentBlock(id);
         }
         
-        public System.Threading.Tasks.Task<Client.TaskLibrary.BitcoinBlock> GetCurrentBlockAsync() {
-            return base.Channel.GetCurrentBlockAsync();
+        public System.Threading.Tasks.Task<Client.ServiceReference.BitcoinBlock> GetCurrentBlockAsync(System.Guid id) {
+            return base.Channel.GetCurrentBlockAsync(id);
         }
         
-        public void ProposeAnswer(uint time, uint nonce) {
-            base.Channel.ProposeAnswer(time, nonce);
+        public void ProposeAnswer(System.Guid id, uint time, uint nonce) {
+            base.Channel.ProposeAnswer(id, time, nonce);
         }
         
-        public System.Threading.Tasks.Task ProposeAnswerAsync(uint time, uint nonce) {
-            return base.Channel.ProposeAnswerAsync(time, nonce);
+        public System.Threading.Tasks.Task ProposeAnswerAsync(System.Guid id, uint time, uint nonce) {
+            return base.Channel.ProposeAnswerAsync(id, time, nonce);
         }
     }
 }

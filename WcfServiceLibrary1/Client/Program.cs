@@ -1,71 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Client.TaskLibrary;
-using TaskLibrary;
-using System.ServiceModel;
+using Client.ServiceReference;
 using System.Security.Cryptography;
+using System.Timers;
 
 namespace Client
 {
-    class MyCallback : IClientCallback
-    {
-        public event EventHandler OnBlockFoundEvent;
-        public event TimeUpdateEvent OnTimeUpdateEvent;
-
-        public delegate void TimeUpdateEvent(UInt32 time);
-
-        public void BlockFound()
-        {
-            OnBlockFoundEvent(this, EventArgs.Empty);
-        }
-
-        public void TimeUpdate(UInt32 time)
-        {
-            OnTimeUpdateEvent(time);
-        }
-    }
     class Program
     {
-        private static Client.TaskLibrary.BitcoinBlock currentBlock;
+        private static BitcoinBlock currentBlock;
         static Service1Client client;
-        static volatile bool newBlockAvailable = false;
+        static Timer mainTimer;
+        private static int _int = 10;
+        private volatile static bool newBlockAv;
+        private static Guid myID;
 
         //For simplicity now (instead of bits counting)
-        private static UInt32 diff = 15;
+        private static UInt32 diff = 3;
 
         static void Main(string[] args)
         {
-            //Client.TaskLibrary
-            //create context and client
-            var callback = new MyCallback();
-            var context = new InstanceContext(callback);
-            client = new Service1Client(context);
+            //ask for new block every 10 seconds
+            mainTimer = new Timer();
+            mainTimer.Elapsed += new ElapsedEventHandler(TimerTick);
+            mainTimer.Interval = _int * 1000;
+            mainTimer.Start();
 
-            //register events
-            callback.OnTimeUpdateEvent += new MyCallback.TimeUpdateEvent(TimeUpdate);
-            callback.OnBlockFoundEvent += new EventHandler(BlockFound);
+            client = new Service1Client();
 
             //register client on server
-            client.RegisterMe();
-
-            //set flag for requesting new block
-            newBlockAvailable = true;
+            myID = client.RegisterMe();
 
             //start mining new block
+            newBlockAv = true;
             MineBlocks();
-        }
-
-        //on time update set new time to current block
-        static private void TimeUpdate(UInt32 time)
-        {
-            if (currentBlock != null) currentBlock.Time = time;
-        }
-
-        //stop mining current block, get new and start mining it
-        static private void BlockFound(object sender, EventArgs e)
-        {
-            newBlockAvailable = true;
         }
 
         //Method for mining blocks
@@ -74,9 +43,9 @@ namespace Client
             //iterations of sha256(sha256(block))
             while (true)
             {
-                if (newBlockAvailable)
+                if (newBlockAv)
                 {
-                    currentBlock = client.GetCurrentBlock();
+                    currentBlock = client.GetCurrentBlock(myID);
                     
                     //if occasionally server didn't answer to us
                     if (currentBlock == null)
@@ -85,7 +54,10 @@ namespace Client
                         continue;
                     }
 
-                    newBlockAvailable = false;
+                    Console.WriteLine("New block received: ");
+                    writeBlock();
+                    
+                    newBlockAv = false;
                 }
 
                 if (!checkBlock(currentBlock))
@@ -94,8 +66,10 @@ namespace Client
                 }
                 else
                 {
-                    client.ProposeAnswer(currentBlock.Time, currentBlock.Nonce);
-                    newBlockAvailable = true;
+                    Console.WriteLine("Block found!");
+                    writeBlock();
+                    client.ProposeAnswer(myID, currentBlock.Time, currentBlock.Nonce);
+                    newBlockAv = true;
 
                     //debug
                     Console.WriteLine("Time: " + currentBlock.Time + ", Nonce: " + currentBlock.Nonce);
@@ -104,16 +78,17 @@ namespace Client
         }
 
         //Check if block have enough leading zeros
-        private static bool checkBlock(Client.TaskLibrary.BitcoinBlock block)
+        private static bool checkBlock(BitcoinBlock block)
         {
             int i = 0;
-            while (getHash(block).ElementAt(i) == 0) i++;
-            return i > diff;
+            var arr = getHash(block);
+            while (arr.ElementAt(i) == 0) i++;
+            return i >= diff;
         }
 
         //calculate hash of block
         //do not forget to reverse each field because of little-endian
-        private static byte[] getHash(Client.TaskLibrary.BitcoinBlock block)
+        private static byte[] getHash(BitcoinBlock block)
         {
             //add version number
             List<byte> hex = BitConverter.GetBytes(block.Version).Reverse().ToList();
@@ -131,12 +106,30 @@ namespace Client
             hex.AddRange(BitConverter.GetBytes(block.Bits).Reverse().ToList());
 
             //add nonce
-            hex.AddRange(BitConverter.GetBytes(block.Bits).Reverse().ToList());
+            hex.AddRange(BitConverter.GetBytes(block.Nonce).Reverse().ToList());
 
             var x = new SHA256Managed();
 
             //compute double hash
             return x.ComputeHash(x.ComputeHash(hex.ToArray())).Reverse().ToArray();
+        }
+        
+        // Handler for timer ticking that use callbacks to announce new time to clients
+        private static void TimerTick(object source, ElapsedEventArgs e)
+        {
+            newBlockAv = true;
+        }
+
+        private static void writeBlock()
+        {
+            Console.WriteLine();
+            Console.WriteLine("Version: " + currentBlock.Version);
+            Console.WriteLine("Hash of Merkle root: " + String.Join("", currentBlock.hashMerkleRoot.Select(p => p.ToString()).ToArray()));
+            Console.WriteLine("Hash of previous block: " + String.Join("", currentBlock.hashPrevBlock.Select(p => p.ToString()).ToArray()));
+            Console.WriteLine("Bits: " + currentBlock.Bits);
+            Console.WriteLine("Time: " + currentBlock.Time);
+            Console.WriteLine("Nonce: " + currentBlock.Nonce);
+            Console.WriteLine();
         }
     }
 }

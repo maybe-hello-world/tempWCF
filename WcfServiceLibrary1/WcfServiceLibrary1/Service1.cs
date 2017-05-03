@@ -15,51 +15,66 @@ namespace TaskLibrary
         private static int tInterval = 10;
 
         //difficulty (also change bits in block)
-        private static int diff = 15;
+        private static int diff = 3;
 
-        private static readonly List<IClientCallback> CallbackChannels = new List<IClientCallback>();
-        private static BitcoinBlock currentBlock = InitializeBlock();
-        private static bool initialized = init();
+        private static List<Guid> clients = new List<Guid>();
         private static Timer mainT;
         private static UInt32 _time;
+        private static bool initialized = init();
+        private static BitcoinBlock currentBlock = InitializeBlock();
 
         /// <summary>
         /// Client must call this method to be notificated by callbacks
         /// </summary>
-        public void RegisterMe()
+        public Guid RegisterMe()
         {
-            //Get callback channel from client
-            var channel = OperationContext.Current.GetCallbackChannel<IClientCallback>();
-
-            if (!CallbackChannels.Contains(channel)) CallbackChannels.Add(channel);
+            var g = Guid.NewGuid();
+            clients.Add(g);
+            return g;
         }
 
         /// <summary>
         /// Get current block to start mining
         /// </summary>
         /// <returns>BitcoinBlock structure with startup nonce for mining</returns>
-        public BitcoinBlock GetCurrentBlock()
+        public BitcoinBlock GetCurrentBlock(Guid id)
         {
-            //get callback and find a range of client in list
-            var channel = OperationContext.Current.GetCallbackChannel<IClientCallback>();
-            var i = CallbackChannels.IndexOf(channel);
+            //find an index of client in the list
+            var i = clients.IndexOf(id);
 
             //clone block with modified nonce for him
-            var cBlock = (BitcoinBlock)currentBlock.Clone();
+            var cBlock = new BitcoinBlock() {
+                Bits = currentBlock.Bits,
+                hashMerkleRoot = currentBlock.hashMerkleRoot,
+                hashPrevBlock = currentBlock.hashPrevBlock,
+                Nonce = currentBlock.Nonce,
+                Time = currentBlock.Time,
+                Version = currentBlock.Version
+            };
+
             if (i > 0)
             {
-                cBlock.Nonce = (UInt32)(UInt32.MaxValue / CallbackChannels.Count * i);
+                cBlock.Nonce = (UInt32)(UInt32.MaxValue / clients.Count * i);
             }
 
             return cBlock;
         }
 
-        public void ProposeAnswer(UInt32 time, UInt32 nonce)
+        public void ProposeAnswer(Guid id, UInt32 time, UInt32 nonce)
         {
             if (time != _time) return;
 
             //check answer
-            var cBlock = (BitcoinBlock)currentBlock.Clone();
+            var cBlock = new BitcoinBlock()
+            {
+                Bits = currentBlock.Bits,
+                hashMerkleRoot = currentBlock.hashMerkleRoot,
+                hashPrevBlock = currentBlock.hashPrevBlock,
+                Nonce = currentBlock.Nonce,
+                Time = currentBlock.Time,
+                Version = currentBlock.Version
+            };
+
             cBlock.Time = time;
             cBlock.Nonce = nonce;
 
@@ -76,14 +91,6 @@ namespace TaskLibrary
             newB.Nonce = 0;
 
             currentBlock = newB;
-            foreach (var x in CallbackChannels)
-            {
-                try
-                {
-                    x.BlockFound();
-                }
-                catch (CommunicationException) { }
-            }
         }
 
         // Initialize block at startup
@@ -123,14 +130,7 @@ namespace TaskLibrary
         private static void TimerTick(object source, ElapsedEventArgs e)
         {
             _time += (UInt32)mainT.Interval;
-            foreach (var x in CallbackChannels)
-            {
-                try
-                {
-                    x.TimeUpdate(_time);
-                }
-                catch (CommunicationException) { }
-            }
+            currentBlock.Time = _time;
         }
 
         //Check if block have enough leading zeros
@@ -138,7 +138,7 @@ namespace TaskLibrary
         {
             int i = 0;
             while (getHash(block).ElementAt(i) == 0) i++;
-            return i > diff;
+            return i >= diff;
         }
 
         //calculate hash of block
@@ -161,7 +161,7 @@ namespace TaskLibrary
             hex.AddRange(BitConverter.GetBytes(block.Bits).Reverse().ToList());
 
             //add nonce
-            hex.AddRange(BitConverter.GetBytes(block.Bits).Reverse().ToList());
+            hex.AddRange(BitConverter.GetBytes(block.Nonce).Reverse().ToList());
 
             var x = new SHA256Managed();
 
