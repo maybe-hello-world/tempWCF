@@ -9,15 +9,14 @@ namespace Client
 {
     class Program
     {
+        //interval for timer in seconds
+        private static int _int = 10;
+
         private static BitcoinBlock currentBlock;
         static Service1Client client;
         static Timer mainTimer;
-        private static int _int = 10;
         private volatile static bool newBlockAv;
         private static Guid myID;
-
-        //For simplicity now (instead of bits counting)
-        private static UInt32 diff = 3;
 
         static void Main(string[] args)
         {
@@ -77,13 +76,15 @@ namespace Client
             }
         }
 
-        //Check if block have enough leading zeros
+        //Check if block hash is less then difficulty hash
         private static bool checkBlock(BitcoinBlock block)
         {
             int i = 0;
-            var arr = getHash(block);
-            while (arr.ElementAt(i) == 0) i++;
-            return i >= diff;
+            var blockHash = getHash(block);
+            var diff = CalculateDiff(block.Bits);
+
+            while (blockHash[i] == diff[i]) i++;
+            return blockHash[i] < diff[i];
         }
 
         //calculate hash of block
@@ -118,6 +119,41 @@ namespace Client
         private static void TimerTick(object source, ElapsedEventArgs e)
         {
             newBlockAv = true;
+        }
+
+        //calculate diff from received bits
+        private static byte[] CalculateDiff(UInt32 bits)
+        {
+            //Bits looks like 0x1c2e445f
+            //first byte is a length of word (0x1c here)
+            //then other bytes create such word as:
+            //0x2e445f00000000000000000000000000000000000000000000000000 (exactly 28 bytes, or 0x1c bytes)
+            var arr = BitConverter.GetBytes(bits).Reverse().ToArray();
+
+            //length of word
+            int length = arr[0];
+
+            byte[] answer = new byte[32];
+
+            //fill first zero leading bytes
+            for (int i = 0; i < 32 - length; i++)
+            {
+                answer[i] = 0;
+            }
+
+            //then our 3 bytes
+            for (int i = 0; i < 3; i++)
+            {
+                answer[i + 32 - length] = arr[i + 1];
+            }
+
+            //then other zeros
+            for (int i = 32 - length + 3; i < 32; i++)
+            {
+                answer[i] = 0;
+            }
+
+            return answer;
         }
 
         private static void writeBlock()

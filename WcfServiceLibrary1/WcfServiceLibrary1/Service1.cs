@@ -14,9 +14,6 @@ namespace TaskLibrary
         //Interval of timer (in seconds) 
         private static int tInterval = 10;
 
-        //difficulty (also change bits in block)
-        private static int diff = 3;
-
         private static List<Guid> clients = new List<Guid>();
         private static Timer mainT;
         private static UInt32 _time;
@@ -101,8 +98,9 @@ namespace TaskLibrary
             cur.hashPrevBlock = StringToByteConvert("00000000000008df4269884f1d3bfc2aed3ea747292abb89be3dc3faa8c5d26f");
             cur.hashMerkleRoot = StringToByteConvert("be0b136f2f3db38d4f55f1963f0acac506d637b3c27a4c42f3504836a4ec52b1");
             cur.Time = _time;
-            cur.Bits = 436956491;
+            cur.Bits = 0x1e00ffff;
             cur.Nonce = 0;
+
             return cur;
         }
 
@@ -133,12 +131,15 @@ namespace TaskLibrary
             currentBlock.Time = _time;
         }
 
-        //Check if block have enough leading zeros
+        //Check if block hash is less then difficulty hash
         private static bool checkBlock(BitcoinBlock block)
         {
             int i = 0;
-            while (getHash(block).ElementAt(i) == 0) i++;
-            return i >= diff;
+            var blockHash = getHash(block);
+            var diff = CalculateDiff(block.Bits);
+
+            while (blockHash[i] == diff[i]) i++;
+            return blockHash[i] < diff[i];
         }
 
         //calculate hash of block
@@ -167,6 +168,41 @@ namespace TaskLibrary
 
             //compute double hash
             return x.ComputeHash(x.ComputeHash(hex.ToArray())).Reverse().ToArray();
+        }
+
+        //calculate diff from received bits
+        private static byte[] CalculateDiff(UInt32 bits)
+        {
+            //Bits looks like 0x1c2e445f
+            //first byte is a length of word (0x1c here)
+            //then other bytes create such word as:
+            //0x2e445f00000000000000000000000000000000000000000000000000 (exactly 28 bytes, or 0x1c bytes)
+            var arr = BitConverter.GetBytes(bits).Reverse().ToArray();
+
+            //length of word
+            int length = arr[0];
+
+            byte[] answer = new byte[32];
+            
+            //fill first zero leading bytes
+            for (int i = 0; i < 32 - length; i++)
+            {
+                answer[i] = 0;
+            }
+
+            //then our 3 bytes
+            for (int i = 0; i < 3; i++)
+            {
+                answer[i + 32 - length] = arr[i + 1];
+            }
+
+            //then other zeros
+            for (int i = 32 - length + 3; i < 32; i++)
+            {
+                answer[i] = 0;
+            }
+
+            return answer;
         }
     }       
 }
